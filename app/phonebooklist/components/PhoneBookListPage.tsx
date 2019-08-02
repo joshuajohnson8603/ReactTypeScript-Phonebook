@@ -34,78 +34,74 @@ type IPhoneBookReactState = {
   allItems: IPhoneBook[],
 };
 
-const TABLE_COLUMNS = [
-  {
-    key: 'fname',
-    label: 'First name',
-    sortable: true,
-    tooltip: 'first name',
-  }, {
-    key: 'lname',
-    label: 'Last name',
-    sortable: true,
-    tooltip: 'last name',
-  },{
-    key: 'birth',
-    label: 'Birthday',
-    sortable: true,
-    tooltip: 'birthday',
-  },{
-    key: 'phoneno',
-    label: 'Phone number',
-    sortable: true,
-    tooltip: 'phone number',
-  },
-];
+// Styles
+
+const containerStyle: React.CSSProperties = {
+  marginTop: '30px',
+  width: '1024px',
+  margin: '30px auto',
+  textAlign: 'center',
+};
+
+const valueStyle: React.CSSProperties = {
+  verticalAlign: 'middle',
+  display: 'block',
+  whiteSpace: 'normal',
+  margin: 0,
+};
+
+const iconStyle: React.CSSProperties = {
+  ...valueStyle,
+  cursor: 'pointer',
+};
+
+const removeIconStyle: React.CSSProperties = {
+  ...iconStyle,
+  whiteSpace: 'inherit',
+};
 
 type PhoneBook = {
   fname: string,
   lname: string,
   birth: string,
   phoneno: string,
-  editable: boolean,
 }
- 
+
 const PhoneBooks = [
   {
     fname: 'Frozen',
     lname: 'yogurt',
     birth: '1990/09/01',
     phoneno: '235802626',
-    editable: false,
   },
   {
     fname: 'Willem',
     lname: 'Daniel',
     birth: '1987/09/01',
     phoneno: '856456346',
-    editable: false,
   },
   {
     fname: 'William',
     lname: 'Roberts',
     birth: '1989/09/01',
     phoneno: '73457457',
-    editable: false,
   },
   {
     fname: 'Pascal',
     lname: 'Alfred',
     birth: '1992/09/01',
     phoneno: '23456347',
-    editable: false,
   },
   {
     fname: 'Khary',
     lname: 'Fraizer',
     birth: '1988/09/01',
     phoneno: '34834588',
-    editable: false,
   },
 ];
 
-export const sortByStringAscending = (array, condition)  => array.sort((a, b) => a[condition].localeCompare(b[condition]));
-export const sortByStringDescending = (array, condition)  => array.sort((a, b) => b[condition].localeCompare(a[condition]));
+const sortByStringAscending = (array, condition)  => array.sort((a, b) => a[condition].localeCompare(b[condition]));
+const sortByStringDescending = (array, condition)  => array.sort((a, b) => b[condition].localeCompare(a[condition]));
 
 type Props = { 
   first_name: string,
@@ -122,6 +118,7 @@ type State = {
   allItems: PhoneBook[],
   filterValue: string,
   selected_counter: string,
+  editable: boolean,
 }
 
 class PhoneBookListPage extends React.Component<Props, State> {
@@ -134,6 +131,7 @@ class PhoneBookListPage extends React.Component<Props, State> {
     allItems: PhoneBooks,
     filterValue: '',
     selected_counter: '',
+    editable: false,
   };
 
   props: Props = {
@@ -142,38 +140,44 @@ class PhoneBookListPage extends React.Component<Props, State> {
     birthday: '',
     phonenumber: '',
   };
-  
+
   public render(): React.ReactElement<{}> {
 
-    const containerStyle: React.CSSProperties = {
-      marginTop: '30px',
-      width: '1024px',
-      margin: '30px auto',
-      textAlign: 'center',
-    };
+    const { first_name, last_name, birthday, phonenumber, filterValue, allItems, selected_counter, editable } = this.state
 
-    const valueStyle: React.CSSProperties = {
-      verticalAlign: 'middle',
-      display: 'block',
-      whiteSpace: 'normal',
-      margin: 0,
-    };
-
-    const iconStyle: React.CSSProperties = {
-      ...valueStyle,
-      cursor: 'pointer',
-    };
-
-
-    const tileStyle: React.CSSProperties = {
-      textAlign: 'center',
-    };
-
-    const selectedStyle: React.CSSProperties = {
-      background: 'FF0000',
-    }
-
-    const { first_name, last_name, birthday, phonenumber, filterValue, allItems, selected_counter } = this.state
+    const TABLE_COLUMNS = [
+      {
+        key: 'fname',
+        label: 'First name',
+        sortable: true,
+        tooltip: 'first name',
+      }, {
+        key: 'lname',
+        label: 'Last name',
+        sortable: true,
+        tooltip: 'last name',
+      },{
+        key: 'birth',
+        label: 'Birthday',
+        sortable: true,
+        tooltip: 'birthday',
+      },{
+        key: 'phoneno',
+        label: 'Phone number',
+        sortable: true,
+        tooltip: 'phone number',
+      },
+      {
+        key: '',
+        label: '',
+        render: (name, all) => <i data-t-id='edit' style={iconStyle} onClick={() =>this.handleEdit(name, all)} className='material-icons'>edit</i>
+      },
+      {
+        key: '',
+        label: '',
+        render: (name, all) => <i data-t-id='remove' style={removeIconStyle} onClick={() =>this.handleRemove(name, all)} className='material-icons'>delete forever</i>
+      },
+    ];
 
     // Only filter if required
     let filteredItems = PhoneBooks;
@@ -197,9 +201,9 @@ class PhoneBookListPage extends React.Component<Props, State> {
         <MuiRaisedButton
           style={{width:'256px'}}
           secondary={true}
-          onMouseUp={() => this.handleAddPhoneBook(first_name, last_name, birthday, phonenumber)}
+          onMouseUp={() => this.handleAddPhoneBook(first_name, last_name, birthday, phonenumber, allItems, editable)}
         >
-          Add
+          {editable ? 'Edit' : 'Add' }
         </MuiRaisedButton>
         <br />
         <MuiTextField
@@ -256,17 +260,57 @@ class PhoneBookListPage extends React.Component<Props, State> {
   // Event handlers
   //
 
-  private handleAddPhoneBook = (first_name, last_name, birthday, phonenumber) => {
-    let phone_book:PhoneBook = {
-      fname: first_name,
-      lname: last_name,
-      birth: birthday,
-      phoneno: phonenumber,
-      editable: false,
-    };
+  private handleEdit = (name, all) => {
+    console.log('all', all.fname);
+    this.setState({ first_name: all.fname, last_name: all.lname, birthday: all.birth, phonenumber: all.phoneno, editable: true});
+  }
 
-    PhoneBooks.push(phone_book);
-    this.setState({ first_name: '', last_name: '', birthday: '', phonenumber: '', allItems: PhoneBooks});
+  private handleRemove = (name, all) => {
+    console.log('all', all);
+    let updatedList = this.state.allItems;
+    for (var i in this.state.allItems) {
+      if (this.state.allItems[i].phoneno == all.phoneno) {
+        console.log('i', i);
+        updatedList.splice(+i, 1);
+      }
+    }
+
+    this.setState({ first_name: '', last_name: '', birthday: '', phonenumber: '', allItems: updatedList, editable: false});
+    console.log('updateList', updatedList);
+  }
+
+  private handleAddPhoneBook = (first_name, last_name, birthday, phonenumber, allItems, editable) => {
+
+    if ( this.state.first_name == '' || this.state.last_name == '' || this.state.birthday == '' || this.state.phonenumber == '' ) {
+      alert('Please fill all items');
+      return;
+    }
+
+    let updatedList = allItems;
+    if ( editable ) {
+      for (var i in updatedList) {
+        if (updatedList[i].phoneno == phonenumber || updatedList[i].birth == birthday) {
+          console.log('edit', i);
+          updatedList[i].fname = first_name;
+          updatedList[i].lname = last_name;
+          updatedList[i].birth = birthday;
+          updatedList[i].phoneno = phonenumber;
+          break;
+        }
+      }
+      this.setState({ first_name: '', last_name: '', birthday: '', phonenumber: '', allItems: updatedList, editable: false});
+      console.log('updateList', updatedList);
+
+    } else {
+      let phone_book:PhoneBook = {
+        fname: first_name,
+        lname: last_name,
+        birth: birthday,
+        phoneno: phonenumber,
+      };
+      PhoneBooks.push(phone_book);
+      this.setState({ first_name: '', last_name: '', birthday: '', phonenumber: '', allItems: PhoneBooks});
+    }   
   }
 
   private handleFilterValueChange = (value) => {
