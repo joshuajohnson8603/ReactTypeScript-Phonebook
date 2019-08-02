@@ -5,9 +5,7 @@ import MuiRaisedButton from 'material-ui/RaisedButton';
 import * as _ from 'lodash';
 
 import { IPhoneBook, IPhoneBookList } from '../Model';
-import { loadState, saveState } from '../Module';
-import { IAppState } from '../../main';
-import { connect } from 'react-redux';
+import { loadState, saveState, sortByStringAscending, sortByStringDescending } from '../Module';
 
 import DataTables from 'material-ui-datatables';
 
@@ -59,6 +57,7 @@ type PhoneBook = {
   phoneno: string,
 }
 
+// Default Data
 const PhoneBooks = [
   {
     fname: 'Frozen',
@@ -91,9 +90,6 @@ const PhoneBooks = [
     phoneno: '34834588',
   },
 ];
-
-const sortByStringAscending = (array, condition)  => array.sort((a, b) => a[condition].localeCompare(b[condition]));
-const sortByStringDescending = (array, condition)  => array.sort((a, b) => b[condition].localeCompare(a[condition]));
 
 type Props = { 
   first_name: string,
