@@ -2,6 +2,7 @@ import * as React from 'react';
 import MuiFloatingActionButton from 'material-ui/FloatingActionButton';
 import MuiTextField from 'material-ui/TextField';
 import MuiRaisedButton from 'material-ui/RaisedButton';
+import DatePicker from 'material-ui/DatePicker';
 import * as _ from 'lodash';
 
 import { IPhoneBook, IPhoneBookList } from '../Model';
@@ -62,31 +63,31 @@ const PhoneBooks = [
   {
     fname: 'Frozen',
     lname: 'yogurt',
-    birth: '1990/09/01',
+    birth: '1990-09-01',
     phoneno: '235802626',
   },
   {
     fname: 'Willem',
     lname: 'Daniel',
-    birth: '1987/09/01',
+    birth: '1987-09-01',
     phoneno: '856456346',
   },
   {
     fname: 'William',
     lname: 'Roberts',
-    birth: '1989/09/01',
+    birth: '1989-09-01',
     phoneno: '73457457',
   },
   {
     fname: 'Pascal',
     lname: 'Alfred',
-    birth: '1992/09/01',
+    birth: '1992-09-01',
     phoneno: '23456347',
   },
   {
     fname: 'Khary',
     lname: 'Fraizer',
-    birth: '1988/09/01',
+    birth: '1988-09-01',
     phoneno: '34834588',
   },
 ];
@@ -107,6 +108,8 @@ type State = {
   filterValue: string,
   selected_counter: string,
   editable: boolean,
+  phoneno_errorText: string,
+  pagenum: number,
 }
 
 class PhoneBookListPage extends React.Component<Props, State> {
@@ -119,6 +122,8 @@ class PhoneBookListPage extends React.Component<Props, State> {
     filterValue: '',
     selected_counter: '',
     editable: false,
+    phoneno_errorText: '',
+    pagenum: 1,
   };
 
   props: Props = {
@@ -131,12 +136,16 @@ class PhoneBookListPage extends React.Component<Props, State> {
   componentWillMount() {
     if ( loadState() === undefined ) {
       saveState(PhoneBooks);
-    }    
+    } else {
+      let items: PhoneBook[] = loadState();
+      let pagenum: number = Math.floor(items.length/10) + 1;
+      this.setState({pagenum: pagenum});
+    }
   }
 
   public render(): React.ReactElement<{}> {
 
-    const { first_name, last_name, birthday, phonenumber, filterValue, allItems, selected_counter, editable } = this.state
+    const { first_name, last_name, birthday, phonenumber, filterValue, allItems, selected_counter, editable, phoneno_errorText } = this.state
 
     const TABLE_COLUMNS = [
       {
@@ -188,7 +197,7 @@ class PhoneBookListPage extends React.Component<Props, State> {
         return false;
       });
     }
-    
+    console.log('pagenum', this.state.pagenum);
     return (
       <div style={containerStyle}>
         <MuiRaisedButton
@@ -211,23 +220,19 @@ class PhoneBookListPage extends React.Component<Props, State> {
           onChange={this.handleLastName}
         />
         <br />
-        <MuiTextField
+        <DatePicker
           floatingLabelText="Birthday"
-          value={birthday}
-          onChange={this.handleBirthday}
+          onChange={(event, date) => this.handleBirthday(event, date)}
         />
         <br />
         <MuiTextField
           floatingLabelText="Phone Number"
           value={phonenumber}
+          hintText="xxx-xxx-xxxx"
           onChange={this.handlePhoneNumber}
+          errorText={phoneno_errorText}
         />
         <br />
-        {/* <div data-t-id='remove-area'>
-          <p style={selectedStyle}> {selected_counter} selected </p>
-          <i data-t-id='remove' style={iconStyle} className='material-icons'>delete forever</i>
-        </div>
-        <i data-t-id='edit' style={iconStyle} className='material-icons'>edit</i> */}
         <DataTables
           height={'auto'}
           selectable={true}
@@ -240,7 +245,8 @@ class PhoneBookListPage extends React.Component<Props, State> {
           onSortOrderChange={this.handleSortOrderChange}
           onRowSelection={this.handleRowSelection}
           enableSelectAll={true}
-          page={1}
+          page={this.state.pagenum}
+          rowSize={10}
           count={100}
           multiSelectable={true}
           showHeaderToolbar
@@ -279,6 +285,13 @@ class PhoneBookListPage extends React.Component<Props, State> {
       return;
     }
 
+    var phoneno = /^(\(?\+?[0-9]*\)?)?[0-9_\- \(\)]*$/;
+
+    if ( !this.state.phonenumber.match(phoneno) ) {
+      this.setState({ phoneno_errorText: 'invalid phone number'});
+      return;
+    }
+
     let updatedList = allItems;
     if ( editable ) {
       for (var i in updatedList) {
@@ -306,7 +319,6 @@ class PhoneBookListPage extends React.Component<Props, State> {
       addedList.push(phone_book);
       saveState(addedList);
       this.setState({ first_name: '', last_name: '', birthday: '', phonenumber: '', allItems: addedList});
-      console.log('loadstate', loadState());
     }   
   }
 
@@ -319,10 +331,6 @@ class PhoneBookListPage extends React.Component<Props, State> {
 
   private handleRowSelection = (value) => {
     console.log('value', value['length']);
-
-    // if ( value ) {
-    //   this.setState({selected_counter: value['length']});
-    // }
   }
 
   private handleCellDoubleClick = (value) => {
@@ -330,7 +338,7 @@ class PhoneBookListPage extends React.Component<Props, State> {
   }
  
   private handleSortOrderChange = (key, order) => {
-    order === 'desc' ? sortByStringDescending(PhoneBooks, key) : sortByStringAscending(PhoneBooks, key)
+    order === 'desc' ? sortByStringDescending(this.state.allItems, key) : sortByStringAscending(this.state.allItems, key)
   }
 
   private handleFirstName = (e:React.FormEvent<HTMLInputElement>) => {
@@ -341,8 +349,8 @@ class PhoneBookListPage extends React.Component<Props, State> {
     this.setState({last_name: e.currentTarget.value});
   }
 
-  private handleBirthday = (e:React.FormEvent<HTMLInputElement>) => {
-    this.setState({birthday: e.currentTarget.value});
+  private handleBirthday = (event, date) => {
+    this.setState({birthday: JSON.stringify(date).substring(1, 11)});
   }
 
   private handlePhoneNumber = (e:React.FormEvent<HTMLInputElement>) => {
