@@ -58,7 +58,7 @@ const PhoneBooks = [
   },
 ];
 
-const getColumns = ( handleEdit: Function, handleRemove: Function) : any => {
+const getColumns = ( handleEdit: Function, handleRemove: Function ): any => {
   const table_columns = [
     {
       key: 'fname',
@@ -70,31 +70,35 @@ const getColumns = ( handleEdit: Function, handleRemove: Function) : any => {
       label: 'Last name',
       sortable: true,
       tooltip: 'last name',
-    },{
+    }, {
       key: 'birth',
       label: 'Birthday',
       sortable: true,
       tooltip: 'birthday',
-    },{
+    }, {
       key: 'phoneno',
       label: 'Phone number',
       sortable: true,
       tooltip: 'phone number',
-    },
-    {
+    }, {
       key: '',
       label: '',
-      render: (name, all) => <i data-t-id='edit' style={iconStyle} onClick={() =>handleEdit(name, all)} className='material-icons'>edit</i>
-    },
-    {
+      render: (name: string, all: any) =>
+        <i data-t-id='edit' style={iconStyle} onClick={() => handleEdit(name, all)} className='material-icons'>
+          edit
+        </i>,
+    }, {
       key: '',
       label: '',
-      render: (name, all) => <i data-t-id='remove' style={removeIconStyle} onClick={() =>handleRemove(name, all)} className='material-icons'>delete forever</i>
+      render: (name: string, all: any) =>
+        <i data-t-id='remove' style={removeIconStyle} onClick={() => handleRemove(name, all)} className='material-icons'>
+          delete forever
+        </i>,
     },
   ];
-  
+
   return table_columns;
-}
+};
 
 //
 // Types
@@ -105,7 +109,7 @@ type PhoneBook = {
   lname: string,
   birth: string,
   phoneno: string,
-}
+};
 
 type Column = {
   key: string,
@@ -113,26 +117,26 @@ type Column = {
   sortable: boolean,
   tooltip: string,
   render: any,
+};
+
+interface IPhoneBooksProps {
+  first_name: string;
+  last_name: string;
+  birthday: string;
+  phonenumber: string;
 }
 
-type IPhoneBooksProps = { 
-  first_name: string,
-  last_name: string,
-  birthday: string,
-  phonenumber: string,
-}
-
-type IPhoneBooksState = {
-  first_name: string,
-  last_name: string,
-  birthday: string,
-  phonenumber: string,
-  allItems: PhoneBook[],
-  filterValue: string,
-  selected_counter: string,
-  editable: boolean,
-  phoneno_errorText: string,
-  pagenum: number,
+interface IPhoneBooksState {
+  first_name: string;
+  last_name: string;
+  birthday: string;
+  phonenumber: string;
+  allItems: PhoneBook[];
+  filterValue: string;
+  selected_counter: string;
+  editable: boolean;
+  phoneno_errorText: string;
+  pagenum: number;
 }
 
 class PhoneBookListPage extends React.Component<IPhoneBooksProps, IPhoneBooksState> {
@@ -161,14 +165,24 @@ class PhoneBookListPage extends React.Component<IPhoneBooksProps, IPhoneBooksSta
       saveState(PhoneBooks);
     } else {
       let items: PhoneBook[] = loadState();
-      let pagenum: number = Math.floor(items.length/10) + 1;
+      let pagenum: number = Math.floor(items.length / 10) + 1;
       this.setState({pagenum: pagenum});
     }
   }
 
   public render(): React.ReactElement<{}> {
 
-    const { first_name, last_name, birthday, phonenumber, filterValue, allItems, selected_counter, editable, phoneno_errorText } = this.state
+    const {
+      first_name,
+      last_name,
+      birthday,
+      phonenumber,
+      filterValue,
+      allItems,
+      selected_counter,
+      editable,
+      phoneno_errorText,
+    } = this.state;
 
     // Only filter if required
     let filteredItems: PhoneBook[] = allItems;
@@ -197,26 +211,26 @@ class PhoneBookListPage extends React.Component<IPhoneBooksProps, IPhoneBooksSta
         </MuiRaisedButton>
         <br />
         <MuiTextField
-          floatingLabelText="First name"
+          floatingLabelText='First name'
           value={first_name}
           onChange={this.handleFirstName}
         />
         <br />
         <MuiTextField
-          floatingLabelText="Last name"
+          floatingLabelText='Last name'
           value={last_name}
           onChange={this.handleLastName}
         />
         <br />
         <DatePicker
-          floatingLabelText="Birthday"
+          floatingLabelText='Birthday'
           onChange={(event, date) => this.handleBirthday(event, date)}
         />
         <br />
         <MuiTextField
-          floatingLabelText="Phone Number"
+          floatingLabelText='Phone Number'
           value={phonenumber}
-          hintText="xxx-xxx-xxxx"
+          hintText='xxx-xxx-xxxx'
           onChange={this.handlePhoneNumber}
           errorText={phoneno_errorText}
         />
@@ -228,10 +242,8 @@ class PhoneBookListPage extends React.Component<IPhoneBooksProps, IPhoneBooksSta
           columns={tableColumns}
           data={filteredItems}
           showCheckboxes={true}
-          onCellDoubleClick={this.handleCellDoubleClick}
           onFilterValueChange={this.handleFilterValueChange}
           onSortOrderChange={this.handleSortOrderChange}
-          onRowSelection={this.handleRowSelection}
           enableSelectAll={true}
           page={this.state.pagenum}
           rowSize={10}
@@ -247,16 +259,16 @@ class PhoneBookListPage extends React.Component<IPhoneBooksProps, IPhoneBooksSta
   // Event handlers
   //
 
-  private handleEdit = (name, all) => {
+  private handleEdit = (name: string, all: any) => {
     console.log('all', all.fname);
     this.setState({ first_name: all.fname, last_name: all.lname, birthday: all.birth, phonenumber: all.phoneno, editable: true});
   }
 
-  private handleRemove = (name, all) => {
+  private handleRemove = (name: string, all: any) => {
     console.log('all', all);
     let updatedList: PhoneBook[] = this.state.allItems;
-    for (var i in this.state.allItems) {
-      if (this.state.allItems[i].phoneno == all.phoneno) {
+    for (let i in this.state.allItems) {
+      if (this.state.allItems[i].phoneno === all.phoneno) {
         console.log('i', i);
         updatedList.splice(+i, 1);
       }
@@ -266,14 +278,20 @@ class PhoneBookListPage extends React.Component<IPhoneBooksProps, IPhoneBooksSta
     console.log('remove-updateList', updatedList);
   }
 
-  private handleAddPhoneBook = (first_name, last_name, birthday, phonenumber, allItems, editable) => {
+  private handleAddPhoneBook = (
+    first_name: string,
+    last_name: string,
+    birthday: string,
+    phonenumber: string,
+    allItems: PhoneBook[],
+    editable: boolean) => {
 
-    if ( this.state.first_name == '' || this.state.last_name == '' || this.state.birthday == '' || this.state.phonenumber == '' ) {
+    if ( this.state.first_name === '' || this.state.last_name === '' || this.state.birthday === '' || this.state.phonenumber === '' ) {
       alert('Please fill all items');
       return;
     }
 
-    var phoneno = /^(\(?\+?[0-9]*\)?)?[0-9_\- \(\)]*$/;
+    let phoneno = /^(\(?\+?[0-9]*\)?)?[0-9_\- \(\)]*$/;
 
     if ( !this.state.phonenumber.match(phoneno) ) {
       this.setState({ phoneno_errorText: 'invalid phone number'});
@@ -283,8 +301,8 @@ class PhoneBookListPage extends React.Component<IPhoneBooksProps, IPhoneBooksSta
     let updatedList: PhoneBook[] = allItems;
 
     if ( editable ) {
-      for (var i in updatedList) {
-        if (updatedList[i].phoneno == phonenumber || updatedList[i].birth == birthday) {
+      for (let i in updatedList) {
+        if (updatedList[i].phoneno === phonenumber || updatedList[i].birth === birthday) {
           console.log('edit', i);
           updatedList[i].fname = first_name;
           updatedList[i].lname = last_name;
@@ -306,26 +324,18 @@ class PhoneBookListPage extends React.Component<IPhoneBooksProps, IPhoneBooksSta
       updatedList.push(phone_book);
       saveState(updatedList);
       this.setState({ first_name: '', last_name: '', birthday: '', phonenumber: '', allItems: updatedList});
-    }   
+    }
   }
 
-  private handleFilterValueChange = (value) => {
+  private handleFilterValueChange = (value: string) => {
     if (value) {
       value = value.toLowerCase();
     }
     this.setState({filterValue: value});
   }
 
-  private handleRowSelection = (value) => {
-    console.log('value', value['length']);
-  }
-
-  private handleCellDoubleClick = (value) => {
-    
-  }
- 
-  private handleSortOrderChange = (key, order) => {
-    order === 'desc' ? sortByStringDescending(this.state.allItems, key) : sortByStringAscending(this.state.allItems, key)
+  private handleSortOrderChange = (key: string, order: string) => {
+    order === 'desc' ? sortByStringDescending(this.state.allItems, key) : sortByStringAscending(this.state.allItems, key);
   }
 
   private handleFirstName = (e:React.FormEvent<HTMLInputElement>) => {
@@ -336,14 +346,13 @@ class PhoneBookListPage extends React.Component<IPhoneBooksProps, IPhoneBooksSta
     this.setState({last_name: e.currentTarget.value});
   }
 
-  private handleBirthday = (event, date) => {
+  private handleBirthday = (event: any, date: any) => {
     this.setState({birthday: JSON.stringify(date).substring(1, 11)});
   }
 
   private handlePhoneNumber = (e:React.FormEvent<HTMLInputElement>) => {
     this.setState({phonenumber: e.currentTarget.value});
-  } 
-
+  }
 }
 
-export default  PhoneBookListPage
+export default  PhoneBookListPage;
