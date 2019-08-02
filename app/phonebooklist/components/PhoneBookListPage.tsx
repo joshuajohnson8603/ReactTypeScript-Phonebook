@@ -5,7 +5,7 @@ import MuiRaisedButton from 'material-ui/RaisedButton';
 import * as _ from 'lodash';
 
 import { IPhoneBook, IPhoneBookList } from '../Model';
-import { changePhoneBook, addPhoneBook, IPhoneBookActionEdit } from '../Module';
+import { loadState, saveState } from '../Module';
 import { IAppState } from '../../main';
 import { connect } from 'react-redux';
 
@@ -15,14 +15,6 @@ import DataTables from 'material-ui-datatables';
 interface IPhoneBookListOwnProps {}
 interface IPhoneBookListStateProps {
   items: IPhoneBook[];
-}
-
-interface IPhoneBookListDispatchProps {
-  addPhoneBook: typeof addPhoneBook;
-}
-
-interface IPhoneBookDispatchProps {
-  changePhoneBook: typeof changePhoneBook;
 }
 
 type IPhoneBookReactState = {
@@ -122,13 +114,12 @@ type State = {
 }
 
 class PhoneBookListPage extends React.Component<Props, State> {
-
   state: State = {
     first_name: '',
     last_name: '',
     birthday: '',
     phonenumber: '',
-    allItems: PhoneBooks,
+    allItems: loadState(),
     filterValue: '',
     selected_counter: '',
     editable: false,
@@ -140,6 +131,12 @@ class PhoneBookListPage extends React.Component<Props, State> {
     birthday: '',
     phonenumber: '',
   };
+
+  componentWillMount() {
+    if ( loadState() === undefined ) {
+      saveState(PhoneBooks);
+    }    
+  }
 
   public render(): React.ReactElement<{}> {
 
@@ -180,7 +177,7 @@ class PhoneBookListPage extends React.Component<Props, State> {
     ];
 
     // Only filter if required
-    let filteredItems = PhoneBooks;
+    let filteredItems = allItems;
     let tableColumns = TABLE_COLUMNS;
     // Filter to select only the items that pass our seach, but only in the selected columns
     if (filterValue) {
@@ -274,9 +271,9 @@ class PhoneBookListPage extends React.Component<Props, State> {
         updatedList.splice(+i, 1);
       }
     }
-
+    saveState(updatedList);
     this.setState({ first_name: '', last_name: '', birthday: '', phonenumber: '', allItems: updatedList, editable: false});
-    console.log('updateList', updatedList);
+    console.log('remove-updateList', updatedList);
   }
 
   private handleAddPhoneBook = (first_name, last_name, birthday, phonenumber, allItems, editable) => {
@@ -298,8 +295,9 @@ class PhoneBookListPage extends React.Component<Props, State> {
           break;
         }
       }
+      saveState(updatedList);
       this.setState({ first_name: '', last_name: '', birthday: '', phonenumber: '', allItems: updatedList, editable: false});
-      console.log('updateList', updatedList);
+      console.log('edit-updateList', updatedList);
 
     } else {
       let phone_book:PhoneBook = {
@@ -308,8 +306,11 @@ class PhoneBookListPage extends React.Component<Props, State> {
         birth: birthday,
         phoneno: phonenumber,
       };
-      PhoneBooks.push(phone_book);
-      this.setState({ first_name: '', last_name: '', birthday: '', phonenumber: '', allItems: PhoneBooks});
+      let addedList: PhoneBook[] = allItems;
+      addedList.push(phone_book);
+      saveState(addedList);
+      this.setState({ first_name: '', last_name: '', birthday: '', phonenumber: '', allItems: addedList});
+      console.log('loadstate', loadState());
     }   
   }
 
