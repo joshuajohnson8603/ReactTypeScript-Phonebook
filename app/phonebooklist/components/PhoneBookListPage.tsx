@@ -10,21 +10,6 @@ import { loadState, saveState, sortByStringAscending, sortByStringDescending } f
 
 import DataTables from 'material-ui-datatables';
 
-
-interface IPhoneBookListOwnProps {}
-interface IPhoneBookListStateProps {
-  items: IPhoneBook[];
-}
-
-type IPhoneBookReactState = {
-  first_name: string,
-  last_name: string,
-  birthday: string,
-  phonenumber: string,
-  filterValue: null,
-  allItems: IPhoneBook[],
-};
-
 // Styles
 
 const containerStyle: React.CSSProperties = {
@@ -51,13 +36,6 @@ const removeIconStyle: React.CSSProperties = {
   whiteSpace: 'inherit',
 };
 
-type PhoneBook = {
-  fname: string,
-  lname: string,
-  birth: string,
-  phoneno: string,
-}
-
 // Default Data
 const PhoneBooks = [
   {
@@ -78,28 +56,73 @@ const PhoneBooks = [
     birth: '1989-09-01',
     phoneno: '73457457',
   },
-  {
-    fname: 'Pascal',
-    lname: 'Alfred',
-    birth: '1992-09-01',
-    phoneno: '23456347',
-  },
-  {
-    fname: 'Khary',
-    lname: 'Fraizer',
-    birth: '1988-09-01',
-    phoneno: '34834588',
-  },
 ];
 
-type Props = { 
+const getColumns = ( handleEdit: Function, handleRemove: Function) : any => {
+  const table_columns = [
+    {
+      key: 'fname',
+      label: 'First name',
+      sortable: true,
+      tooltip: 'first name',
+    }, {
+      key: 'lname',
+      label: 'Last name',
+      sortable: true,
+      tooltip: 'last name',
+    },{
+      key: 'birth',
+      label: 'Birthday',
+      sortable: true,
+      tooltip: 'birthday',
+    },{
+      key: 'phoneno',
+      label: 'Phone number',
+      sortable: true,
+      tooltip: 'phone number',
+    },
+    {
+      key: '',
+      label: '',
+      render: (name, all) => <i data-t-id='edit' style={iconStyle} onClick={() =>handleEdit(name, all)} className='material-icons'>edit</i>
+    },
+    {
+      key: '',
+      label: '',
+      render: (name, all) => <i data-t-id='remove' style={removeIconStyle} onClick={() =>handleRemove(name, all)} className='material-icons'>delete forever</i>
+    },
+  ];
+  
+  return table_columns;
+}
+
+//
+// Types
+//
+
+type PhoneBook = {
+  fname: string,
+  lname: string,
+  birth: string,
+  phoneno: string,
+}
+
+type Column = {
+  key: string,
+  label: string,
+  sortable: boolean,
+  tooltip: string,
+  render: any,
+}
+
+type IPhoneBooksProps = { 
   first_name: string,
   last_name: string,
   birthday: string,
   phonenumber: string,
 }
 
-type State = {
+type IPhoneBooksState = {
   first_name: string,
   last_name: string,
   birthday: string,
@@ -112,8 +135,8 @@ type State = {
   pagenum: number,
 }
 
-class PhoneBookListPage extends React.Component<Props, State> {
-  state: State = {
+class PhoneBookListPage extends React.Component<IPhoneBooksProps, IPhoneBooksState> {
+  state: IPhoneBooksState = {
     first_name: '',
     last_name: '',
     birthday: '',
@@ -126,7 +149,7 @@ class PhoneBookListPage extends React.Component<Props, State> {
     pagenum: 1,
   };
 
-  props: Props = {
+  props: IPhoneBooksProps = {
     first_name: '',
     last_name: '',
     birthday: '',
@@ -147,43 +170,9 @@ class PhoneBookListPage extends React.Component<Props, State> {
 
     const { first_name, last_name, birthday, phonenumber, filterValue, allItems, selected_counter, editable, phoneno_errorText } = this.state
 
-    const TABLE_COLUMNS = [
-      {
-        key: 'fname',
-        label: 'First name',
-        sortable: true,
-        tooltip: 'first name',
-      }, {
-        key: 'lname',
-        label: 'Last name',
-        sortable: true,
-        tooltip: 'last name',
-      },{
-        key: 'birth',
-        label: 'Birthday',
-        sortable: true,
-        tooltip: 'birthday',
-      },{
-        key: 'phoneno',
-        label: 'Phone number',
-        sortable: true,
-        tooltip: 'phone number',
-      },
-      {
-        key: '',
-        label: '',
-        render: (name, all) => <i data-t-id='edit' style={iconStyle} onClick={() =>this.handleEdit(name, all)} className='material-icons'>edit</i>
-      },
-      {
-        key: '',
-        label: '',
-        render: (name, all) => <i data-t-id='remove' style={removeIconStyle} onClick={() =>this.handleRemove(name, all)} className='material-icons'>delete forever</i>
-      },
-    ];
-
     // Only filter if required
-    let filteredItems = allItems;
-    let tableColumns = TABLE_COLUMNS;
+    let filteredItems: PhoneBook[] = allItems;
+    let tableColumns: Column[] = getColumns(this.handleEdit, this.handleRemove);
     // Filter to select only the items that pass our seach, but only in the selected columns
     if (filterValue) {
       filteredItems = filteredItems.filter((item) => {
@@ -197,7 +186,6 @@ class PhoneBookListPage extends React.Component<Props, State> {
         return false;
       });
     }
-    console.log('pagenum', this.state.pagenum);
     return (
       <div style={containerStyle}>
         <MuiRaisedButton
@@ -237,7 +225,7 @@ class PhoneBookListPage extends React.Component<Props, State> {
           height={'auto'}
           selectable={true}
           showRowHover={true}
-          columns={TABLE_COLUMNS}
+          columns={tableColumns}
           data={filteredItems}
           showCheckboxes={true}
           onCellDoubleClick={this.handleCellDoubleClick}
@@ -266,7 +254,7 @@ class PhoneBookListPage extends React.Component<Props, State> {
 
   private handleRemove = (name, all) => {
     console.log('all', all);
-    let updatedList = this.state.allItems;
+    let updatedList: PhoneBook[] = this.state.allItems;
     for (var i in this.state.allItems) {
       if (this.state.allItems[i].phoneno == all.phoneno) {
         console.log('i', i);
@@ -292,7 +280,8 @@ class PhoneBookListPage extends React.Component<Props, State> {
       return;
     }
 
-    let updatedList = allItems;
+    let updatedList: PhoneBook[] = allItems;
+
     if ( editable ) {
       for (var i in updatedList) {
         if (updatedList[i].phoneno == phonenumber || updatedList[i].birth == birthday) {
@@ -307,18 +296,16 @@ class PhoneBookListPage extends React.Component<Props, State> {
       saveState(updatedList);
       this.setState({ first_name: '', last_name: '', birthday: '', phonenumber: '', allItems: updatedList, editable: false});
       console.log('edit-updateList', updatedList);
-
     } else {
-      let phone_book:PhoneBook = {
+      let phone_book: PhoneBook = {
         fname: first_name,
         lname: last_name,
         birth: birthday,
         phoneno: phonenumber,
       };
-      let addedList: PhoneBook[] = allItems;
-      addedList.push(phone_book);
-      saveState(addedList);
-      this.setState({ first_name: '', last_name: '', birthday: '', phonenumber: '', allItems: addedList});
+      updatedList.push(phone_book);
+      saveState(updatedList);
+      this.setState({ first_name: '', last_name: '', birthday: '', phonenumber: '', allItems: updatedList});
     }   
   }
 
